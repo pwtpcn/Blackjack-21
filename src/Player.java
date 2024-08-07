@@ -34,7 +34,6 @@ public class Player {
 
     public void addCard(Card card) {
         hand.add(card);
-
         addScore(card.getScore());
     }
 

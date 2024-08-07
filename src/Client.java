@@ -26,56 +26,70 @@ public class Client {
             // Register player name
             System.out.print("Enter your name: ");
             String playerName = input.readLine();
-            System.out.print(playerName + " has join game");
-            System.out.println("");
+//            System.out.print(playerName + " has join game");
+//            System.out.println("");
             out.writeUTF("REGISTER " + playerName);
             out.flush();
 
+            // Read response for registration
+            String response = in.readUTF();
+            System.out.println(response);
+
+            if(response.startsWith("200")) {
+                System.out.println("Registration successful");
+                System.out.print(playerName + " has join game");
+                System.out.println("");
+
+                // Thread to read messages from the server
+                Thread readThread = new Thread(() -> {
+                    try {
+                        while (!socket.isClosed()) {
+                            String serverMessage = in.readUTF();
+//                            if(serverMessage.equals("start")) {
+//                                out.writeUTF("draw");
+//                            }
+                            System.out.println(serverMessage);
+                        }
+                    } catch (IOException e) {
+                        System.out.println(e);
+                    }
+                });
+                readThread.start();
+
+                String line = "";
+
+                // Main loop to send messages to the server
+                while (!line.equals("Over")) {
+                    try {
+                        line = input.readLine();
+                        out.writeUTF(line);
+                        out.flush();
+                    } catch (IOException i) {
+                        System.out.println(i);
+                    }
+                }
+            } else {
+                System.out.println("Registration failed " + response);
+            }
         } catch (UnknownHostException u) {
             System.out.println(u);
-            return;
         } catch (IOException i) {
             System.out.println(i);
-            return;
-        }
-
-        String line = "";
-
-        // Thread to read messages from the server
-        Thread readThread = new Thread(() -> {
+        } finally {
+            // Close resources
             try {
-                while (!socket.isClosed()) {
-                    String serverMessage = in.readUTF();
-                    if(serverMessage.equals("start")) {
-                        out.writeUTF("draw");
-                    }
-                    System.out.println(serverMessage);
-                }
-            } catch (IOException e) {
-                System.out.println(e);
-            }
-        });
-        readThread.start();
-
-        // Main loop to send messages to the server
-        while (!line.equals("Over")) {
-            try {
-                line = input.readLine();
-                out.writeUTF(line);
-                out.flush();
+                input.close();
+                out.close();
+                socket.close();
             } catch (IOException i) {
                 System.out.println(i);
             }
         }
+    }
 
-        // Close resources
-        try {
-            input.close();
-            out.close();
-            socket.close();
-        } catch (IOException i) {
-            System.out.println(i);
-        }
+    private void sendCommand(String command) throws IOException {
+        out.writeUTF(command);
+        out.flush();
     }
 
     public static void main(String args[]) {

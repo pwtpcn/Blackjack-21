@@ -51,10 +51,10 @@ class NewClientHandler extends Thread {
                         break;
                     case "SEE":
                         handlerSee();
-                    case "RESET":
-                        handleReset();
+//                    case "RESET":
+//                        handleReset();
                     default:
-                        sendResponse(400, "BAD_REQUEST");
+                        sendResponse(400, "Bad request - Wrong command (PLAY, HIT, PASS, SEE, OVER)");
                         break;
                 }
             }
@@ -78,34 +78,47 @@ class NewClientHandler extends Thread {
     }
 
     private void handleRegister(String playerName) throws IOException {
-        if (playerName == null || playerName.isEmpty()) {
-            sendResponse(400, "BAD_REQUEST");
-            return;
+//        if (playerName == null || playerName.isEmpty()) {
+//            sendResponse(400, "BAD_REQUEST");
+//            return;
+//        }
+
+        while (playerName.trim().isEmpty()){
+            sendResponse(400, "Bad request - Player name cannot be empty.");
+            playerName = in.readUTF().split(" ", 2)[1];
         }
+
         Player player = new Player(playerName, socket);
         players.put(playerName, player);
         blackjack.addPlayer(player);
-        sendResponse(200, "REGISTERED " + playerName);
+
+//        blackjack.playersList();
+
+        sendResponse(200, "OK - Registration successful. Welcome  " + playerName + "!");
         System.out.println("Player " + playerName + " registered with IP: " + socket.getInetAddress());
     }
 
     private void handlePlay() throws IOException {
         if(!blackjack.isGameStarted()){
             blackjack.startGame();
-            broadcastMessage("START");
+            broadcastMessage("**--------START--------**");
             for (Player player : players.values()) {
                 Card card1 = blackjack.dealCard(player);
                 Card card2 = blackjack.dealCard(player);
                 out.writeUTF("Card: " + card1.toString());
                 out.writeUTF("Card: " + card2.toString());
                 out.writeUTF("Overall Score: " + player.getScore());
-                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
-                playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
-                playerOut.flush();
+
+//                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+//                playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
+//                playerOut.flush();
+
+                sendResponse(200, "OK - Game started. Two cards dealt to each player.");
+
                 System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
             }
         } else{
-            sendResponse(400, "GAME_ALREADY_STARTED");
+            sendResponse(400, "Bad request - Game is already started.");
         }
     }
 
@@ -118,12 +131,12 @@ class NewClientHandler extends Thread {
                 out.writeUTF("Your overall Score: " + player.getScore());
                 broadcastMessage(player.getName() + " hit a " + card.toString());
                 out.flush();
-                sendResponse(200, "CARD " + card.toString() + " " + player.getScore());
+                sendResponse(200, "OK - You hit " + card.toString());
             } else {
-                sendResponse(404, "NOT_FOUND");
+                sendResponse(404, "Not found - Player not found.");
             }
         } else {
-            sendResponse(400, "GAME_NOT_STARTED");
+            sendResponse(400, "Bad request - Game has not started yet.");
         }
     }
 
@@ -134,13 +147,13 @@ class NewClientHandler extends Thread {
                 for (Player p : players.values()) {
                     System.out.println(p.getName()+" : "+p.getHand().get(0));
                 }
-                sendResponse(200, "Card has show");
+                sendResponse(200, "OK - Card has show");
             }
             else{
-                sendResponse(404, "NOT_FOUND");
+                sendResponse(404, "Not found - Player not found.");
             }
         } else {
-            sendResponse(400, "GAME_NOT_STARTED");
+            sendResponse(400, "Bad request - Game has not started yet.");
         }
     }
 
@@ -149,16 +162,16 @@ class NewClientHandler extends Thread {
             Player player = players.get(socket.getInetAddress().toString());
             if (player != null) {
                 if(!player.hasPassed()){
-                    sendResponse(200, player.getName() + " PASS");
+                    sendResponse(200, "OK - " + player.getName() + " PASS");
                     player.setPassed(true);
                     Server.addEND();
                 }
                 handleGameOver();
             } else {
-                sendResponse(404, "NOT_FOUND");
+                sendResponse(404, "Not found - Player not found.");
             }
         } else {
-            sendResponse(400, "GAME_NOT_STARTED");
+            sendResponse(400, "Bad request - Game has not started yet");
         }
     }
 
@@ -169,6 +182,7 @@ class NewClientHandler extends Thread {
             broadcastMessage("        GAME OVER        ");
             findWinner();
             showScoreBoard();
+            blackjack.reset();
         }
     }
 
@@ -201,9 +215,9 @@ class NewClientHandler extends Thread {
         System.out.println("Received OVER command, closing connection.");
     }
 
-    private void handleReset() {
-        blackjack.reset();
-    }
+//    private void handleReset() {
+//        blackjack.reset();
+//    }
 
     private void broadcastMessage(String message) {
         for (Player player : players.values()) {

@@ -17,6 +17,7 @@ public class Blackjack {
 
     public void reset(){
         deck = new CardDeck();
+        gameStarted = false;
         for (Player player : players) {
             player.reset();
         }
@@ -37,7 +38,17 @@ public class Blackjack {
         return gameStarted;
     }
 
-//    public void play() {
+    public void playersList(){
+        for (Player player : players) {
+            System.out.println(player.getName());
+        }
+    }
+
+    public CardDeck getDeck() {
+        return deck;
+    }
+
+    //    public void play() {
 //        deck.shuffle();
 //        deck.shuffle();
 //        for (Player player : players) {
