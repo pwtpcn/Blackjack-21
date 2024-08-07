@@ -90,45 +90,75 @@ class NewClientHandler extends Thread {
     }
 
     private void handlePlay() throws IOException {
-        broadcastMessage("START");
-        for (Player player : players.values()) {
-            Card card1 = blackjack.dealCard(player);
-            Card card2 = blackjack.dealCard(player);
-            out.writeUTF("Card: " + card1.toString());
-            out.writeUTF("Card: " + card2.toString());
-            out.writeUTF("Overall Score: " + player.getScore());
-            DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
-            playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
-            playerOut.flush();
-            System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
+        if(!blackjack.isGameStarted()){
+            blackjack.startGame();
+            broadcastMessage("START");
+            for (Player player : players.values()) {
+                Card card1 = blackjack.dealCard(player);
+                Card card2 = blackjack.dealCard(player);
+                out.writeUTF("Card: " + card1.toString());
+                out.writeUTF("Card: " + card2.toString());
+                out.writeUTF("Overall Score: " + player.getScore());
+                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+                playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
+                playerOut.flush();
+                System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
+            }
+        } else{
+            sendResponse(400, "GAME_ALREADY_STARTED");
         }
     }
 
     private void handleHit() throws IOException {
-        Player player = players.get(socket.getInetAddress().toString());
-        if (player != null) {
-            Card card = blackjack.dealCard(player);
-            out.writeUTF("Card: " + card.toString());
-            out.writeUTF("Overall Score: " + player.getScore());
-            broadcastMessage(player.getName() + " hit a " + card.toString());
-            out.flush();
-            sendResponse(200, "CARD " + card.toString() + " " + player.getScore());
+        if(blackjack.isGameStarted()){
+            Player player = players.get(socket.getInetAddress().toString());
+            if (player != null) {
+                Card card = blackjack.dealCard(player);
+                out.writeUTF("You hit a " + card.toString());
+                out.writeUTF("Your overall Score: " + player.getScore());
+                broadcastMessage(player.getName() + " hit a " + card.toString());
+                out.flush();
+                sendResponse(200, "CARD " + card.toString() + " " + player.getScore());
+            } else {
+                sendResponse(404, "NOT_FOUND");
+            }
         } else {
-            sendResponse(404, "NOT_FOUND");
+            sendResponse(400, "GAME_NOT_STARTED");
+        }
+    }
+
+    private void handlerSee() throws IOException {
+        if(blackjack.isGameStarted()){
+            Player player = players.get(socket.getInetAddress().toString());
+            if(player != null) {
+                for (Player p : players.values()) {
+                    System.out.println(p.getName()+" : "+p.getHand().get(0));
+                }
+                sendResponse(200, "Card has show");
+            }
+            else{
+                sendResponse(404, "NOT_FOUND");
+            }
+        } else {
+            sendResponse(400, "GAME_NOT_STARTED");
         }
     }
 
     private void handlePass() throws IOException {
-        Player player = players.get(socket.getInetAddress().toString());
-        if (player != null) {
-            if(!player.hasPassed()){
-                sendResponse(200, player.getName() + " PASS");
-                player.setPassed(true);
-                Server.addEND();
+        if(blackjack.isGameStarted()){
+            Player player = players.get(socket.getInetAddress().toString());
+            if (player != null) {
+                if(!player.hasPassed()){
+                    sendResponse(200, player.getName() + " PASS");
+                    player.setPassed(true);
+                    Server.addEND();
+                }
+                handleGameOver();
+            } else {
+                sendResponse(404, "NOT_FOUND");
             }
-            handleGameOver();
         } else {
-            sendResponse(404, "NOT_FOUND");
+            sendResponse(400, "GAME_NOT_STARTED");
         }
     }
 
@@ -169,19 +199,6 @@ class NewClientHandler extends Thread {
 
     private void handleOver() {
         System.out.println("Received OVER command, closing connection.");
-    }
-
-    private void handlerSee() throws IOException {
-        Player player = players.get(socket.getInetAddress().toString());
-        if(player != null) {
-            for (Player p : players.values()) {
-                System.out.println(p.getName()+" : "+p.getHand().get(0));
-            }
-            sendResponse(200, "Card has show");
-        }
-        else{
-            sendResponse(404, "NOT_FOUND");
-        }
     }
 
     private void handleReset() {
