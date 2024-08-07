@@ -4,7 +4,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Server {
     private ServerSocket server = null;
-    private static String ADDRESS = "192.168.133.187";
+//    private static String ADDRESS = "192.168.133.187";
+    private static String ADDRESS = "0.0.0.0";
     private ConcurrentHashMap<String, Player> players = new ConcurrentHashMap<>();
     private final Blackjack blackjack = new Blackjack();
     private static int END = 0;
@@ -13,7 +14,6 @@ public class Server {
         try {
             server = new ServerSocket(port, 0, InetAddress.getByName(ADDRESS));
             System.out.println("Server started");
-
             while (true) {
                 System.out.println("Waiting for a client ...");
                 Socket socket = server.accept();
@@ -87,7 +87,7 @@ class ClientHandler extends Thread {
                 }
                 if (line.equals("see")) {
                     for (Player p : players.values()) {
-                        broadcastMessage(p.getName()+" : "+p.getHand().get(0));
+                        out.writeUTF(p.getName()+" : "+p.getHand().get(0));
                     }
                 }
                 if (line.equals("hit")) {
@@ -106,12 +106,22 @@ class ClientHandler extends Thread {
                             if(playerWin == null && p.getScore() <= 21){
                                 playerWin = p;
                             }
-                            else if(p.getScore() > playerWin.getScore() && p.getScore() <= 21){
+                            else if(playerWin != null && p.getScore() > playerWin.getScore() && p.getScore() <= 21){
                                 playerWin = p;
                             }
                         }
-                        broadcastMessage("Winner is " + playerWin.getName());
-                        broadcastMessage("Winner is " + playerWin.getScore());
+                        broadcastMessage("**--------------------**");
+                        if(playerWin != null){
+                            broadcastMessage("Winner is " + playerWin.getName());
+                            broadcastMessage("Winner score is " + playerWin.getScore());
+                        } else{
+                            broadcastMessage("No winner!");
+                        }
+                        broadcastMessage("**--------------------**");
+                        for (Player p : players.values()) {
+                            broadcastMessage(p.getName() + " score is " + p.getScore());
+                        }
+                        broadcastMessage("**--------------------**");
                         broadcastMessage("Game over");
                     }
                 }

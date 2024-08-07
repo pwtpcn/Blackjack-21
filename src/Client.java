@@ -6,7 +6,8 @@ public class Client {
     private DataInputStream input = null;
     private DataInputStream in = null;
     private DataOutputStream out = null;
-    private static String ADDRESS = "192.168.133.187";
+    private static String ADDRESS = "0.0.0.0";
+//    private static String ADDRESS = "192.168.133.187";
 
     public Client(String address, int port) {
         try {
@@ -25,6 +26,8 @@ public class Client {
             // Register player name
             System.out.print("Enter your name: ");
             String playerName = input.readLine();
+            System.out.print(playerName + " has join game");
+            System.out.println("");
             out.writeUTF(playerName);
             out.flush();
 
