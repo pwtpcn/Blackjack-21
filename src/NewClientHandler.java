@@ -11,6 +11,7 @@ class NewClientHandler extends Thread {
     private DataOutputStream out;
     private ConcurrentHashMap<String, Player> players;
     private Blackjack blackjack;
+    private String playerName;
 
     public NewClientHandler(Socket socket, ConcurrentHashMap<String, Player> players, Blackjack blackjack) {
         this.socket = socket;
@@ -31,11 +32,11 @@ class NewClientHandler extends Thread {
                 line = in.readUTF();
                 String[] tokens = line.split(" ", 2);
                 String command = tokens[0];
-                String argument = tokens.length > 1 ? tokens[1] : "";
+                String arg = tokens.length > 1 ? tokens[1] : "";
 
                 switch (command) {
                     case "REGISTER":
-                        handleRegister(argument);
+                        handleRegister(arg);
                         break;
                     case "PLAY":
                         handlePlay();
@@ -87,7 +88,7 @@ class NewClientHandler extends Thread {
             sendResponse(400, "Bad request - Player name cannot be empty.");
             playerName = in.readUTF().split(" ", 2)[1];
         }
-
+        this.playerName = playerName;
         Player player = new Player(playerName, socket);
         players.put(playerName, player);
         blackjack.addPlayer(player);
@@ -100,6 +101,7 @@ class NewClientHandler extends Thread {
 
     private void handlePlay() throws IOException {
         if(!blackjack.isGameStarted()){
+            System.out.println("Game start");
             blackjack.startGame();
             broadcastMessage("**--------START--------**");
             for (Player player : players.values()) {
@@ -124,7 +126,8 @@ class NewClientHandler extends Thread {
 
     private void handleHit() throws IOException {
         if(blackjack.isGameStarted()){
-            Player player = players.get(socket.getInetAddress().toString());
+//            Player player = players.get(socket.getInetAddress().toString());
+            Player player = players.get(playerName);
             if (player != null) {
                 Card card = blackjack.dealCard(player);
                 out.writeUTF("You hit a " + card.toString());
@@ -142,10 +145,11 @@ class NewClientHandler extends Thread {
 
     private void handlerSee() throws IOException {
         if(blackjack.isGameStarted()){
-            Player player = players.get(socket.getInetAddress().toString());
+//            Player player = players.get(socket.getInetAddress().toString());
+            Player player = players.get(playerName);
             if(player != null) {
                 for (Player p : players.values()) {
-                    System.out.println(p.getName()+" : "+p.getHand().get(0));
+                    out.writeUTF(p.getName()+" : "+p.getHand().get(0));
                 }
                 sendResponse(200, "OK - Card has show");
             }
@@ -159,7 +163,8 @@ class NewClientHandler extends Thread {
 
     private void handlePass() throws IOException {
         if(blackjack.isGameStarted()){
-            Player player = players.get(socket.getInetAddress().toString());
+//            Player player = players.get(socket.getInetAddress().toString());
+            Player player = players.get(playerName);
             if (player != null) {
                 if(!player.hasPassed()){
                     sendResponse(200, "OK - " + player.getName() + " PASS");
@@ -206,8 +211,9 @@ class NewClientHandler extends Thread {
 
     private void showScoreBoard(){
         broadcastMessage("**---------------------**");
+        broadcastMessage("      *Score Board*      ");
         for (Player p : players.values()) {
-            broadcastMessage(p.getName() + " score is " + p.getScore());
+            broadcastMessage(p.getName() + " score: " + p.getScore());
         }
     }
 

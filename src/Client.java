@@ -68,8 +68,6 @@ public class Client {
                         System.out.println(i);
                     }
                 }
-            } else {
-                System.out.println("Registration failed " + response);
             }
         } catch (UnknownHostException u) {
             System.out.println(u);
