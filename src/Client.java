@@ -28,7 +28,7 @@ public class Client {
             String playerName = input.readLine();
             System.out.print(playerName + " has join game");
             System.out.println("");
-            out.writeUTF(playerName);
+            out.writeUTF("REGISTER " + playerName);
             out.flush();
 
         } catch (UnknownHostException u) {

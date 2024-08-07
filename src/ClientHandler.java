@@ -54,7 +54,7 @@ class ClientHandler extends Thread {
                 }
                 if (line.equals("see")) {
                     for (Player p : players.values()) {
-                        out.writeUTF(p.getName()+" : "+p.getHand().get(0));
+                        System.out.println(p.getName()+" : "+p.getHand().get(0));
                     }
                 }
                 if (line.equals("hit")) {
@@ -107,6 +107,56 @@ class ClientHandler extends Thread {
             } catch (IOException i) {
                 System.out.println(i);
             }
+        }
+    }
+
+    private void sendResponse(int statusCode, String statusPhrase) throws IOException {
+        out.writeUTF(statusCode + " " + statusPhrase);
+        out.flush();
+    }
+
+    private void handleRegister(String playerName) throws IOException {
+        if (playerName == null || playerName.isEmpty()) {
+            sendResponse(400, "BAD_REQUEST");
+            return;
+        }
+        Player player = new Player(playerName, socket);
+        players.put(playerName, player);
+        blackjack.addPlayer(player);
+        sendResponse(200, "REGISTERED " + playerName);
+        System.out.println("Player " + playerName + " registered with IP: " + socket.getInetAddress());
+    }
+
+    private void handlePlay() throws IOException {
+        for (Player player : players.values()) {
+            Card card1 = blackjack.dealCard(player);
+            Card card2 = blackjack.dealCard(player);
+            DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+            playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
+            playerOut.flush();
+            System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
+        }
+    }
+
+    private void handleHit() throws IOException {
+        Player player = players.get(socket.getInetAddress().toString());
+        if (player != null) {
+            Card card = blackjack.dealCard(player);
+            sendResponse(200, "CARD " + card.toString() + " " + player.getScore());
+        } else {
+            sendResponse(404, "NOT_FOUND");
+        }
+    }
+
+    private void handlePass() throws IOException {
+        Player player = players.get(socket.getInetAddress().toString());
+        if (player != null) {
+            Server.addEND();
+            if (Server.getEND() >= players.size()) {
+                broadcastMessage("200 GAME_OVER");
+            }
+        } else {
+            sendResponse(404, "NOT_FOUND");
         }
     }
 

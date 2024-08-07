@@ -19,7 +19,8 @@ public class Server {
                 System.out.println("Waiting for a client ...");
                 Socket socket = server.accept();
                 System.out.println("Client accepted");
-                new ClientHandler(socket, players, blackjack).start();
+//                new ClientHandler(socket, players, blackjack).start();
+                new NewClientHandler(socket, players, blackjack).start();
             }
         } catch (IOException i) {
             System.out.println(i);
@@ -32,6 +33,10 @@ public class Server {
 
     public synchronized static int getEND() {
         return END;
+    }
+
+    public synchronized static void resetEND() {
+        END = 0;
     }
 
     public static void main(String args[]) {

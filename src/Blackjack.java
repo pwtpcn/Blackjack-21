@@ -3,10 +3,12 @@ import java.util.ArrayList;
 public class Blackjack {
     private CardDeck deck;
     private ArrayList<Player> players;
+    private boolean gameStarted;
 
     public Blackjack() {
         this.deck = new CardDeck();
         this.players = new ArrayList<>();
+        this.gameStarted = false;
     }
 
     public void addPlayer(Player player) {
@@ -26,19 +28,28 @@ public class Blackjack {
         return card;
     }
 
-    public void play() {
+    public void startGame() {
+        this.gameStarted = true;
         deck.shuffle();
-        deck.shuffle();
-        for (Player player : players) {
-            player.addCard(deck.randomCard());
-            player.addCard(deck.randomCard());
-        }
-        for (Player player : players) {
-            System.out.println(player.getName());
-            System.out.println("-------------------");
-            player.printHand();
-            player.printScore();
-            System.out.println("-------------------");
-        }
     }
+
+    public boolean isGameStarted() {
+        return gameStarted;
+    }
+
+//    public void play() {
+//        deck.shuffle();
+//        deck.shuffle();
+//        for (Player player : players) {
+//            player.addCard(deck.randomCard());
+//            player.addCard(deck.randomCard());
+//        }
+//        for (Player player : players) {
+//            System.out.println(player.getName());
+//            System.out.println("-------------------");
+//            player.printHand();
+//            player.printScore();
+//            System.out.println("-------------------");
+//        }
+//    }
 }
