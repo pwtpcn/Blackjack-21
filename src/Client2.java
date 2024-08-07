@@ -1,7 +1,7 @@
 import java.io.*;
 import java.net.*;
 
-public class Client {
+public class Client2 {
     private Socket socket = null;
     private DataInputStream input = null;
     private DataInputStream in = null;
@@ -9,7 +9,7 @@ public class Client {
     private static String ADDRESS = "0.0.0.0";
 //    private static String ADDRESS = "192.168.133.187";
 
-    public Client(String address, int port) {
+    public Client2(String address, int port) {
         try {
             socket = new Socket(address, port);
             System.out.println("Connected");
@@ -48,9 +48,6 @@ public class Client {
                             if(serverMessage.equals("START")) {
                                 out.writeUTF("PLAY");
                             }
-//                            if(serverMessage.equals("PLAY")){
-//                                handlePlay();
-//                            }
                             System.out.println(serverMessage);
                         }
                     } catch (IOException e) {

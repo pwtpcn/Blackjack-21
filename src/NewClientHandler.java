@@ -38,7 +38,11 @@ class NewClientHandler extends Thread {
                     case "REGISTER":
                         handleRegister(arg);
                         break;
+                    case "START":
+                        startBroadcast();
+                        break;
                     case "PLAY":
+//                        broadcastCommand("PLAY");
                         handlePlay();
                         break;
                     case "HIT":
@@ -52,6 +56,7 @@ class NewClientHandler extends Thread {
                         break;
                     case "SEE":
                         handlerSee();
+                        break;
 //                    case "RESET":
 //                        handleReset();
                     default:
@@ -99,26 +104,42 @@ class NewClientHandler extends Thread {
         System.out.println("Player " + playerName + " registered with IP: " + socket.getInetAddress());
     }
 
+    private void startBroadcast(){
+        System.out.println(playerName + " use START command");
+        System.out.println("Game start");
+        broadcastMessage("START");
+        broadcastMessage("**--------START--------**");
+    }
+
     private void handlePlay() throws IOException {
         if(!blackjack.isGameStarted()){
-            System.out.println("Game start");
             blackjack.startGame();
-            broadcastMessage("**--------START--------**");
+//            broadcastMessage("**--------START--------**");
+
+//            Player player = players.get(playerName);
+//
+//            Card card1 = blackjack.dealCard(player);
+//            Card card2 = blackjack.dealCard(player);
+//            out.writeUTF("Card: " + card1.toString());
+//            out.writeUTF("Card: " + card2.toString());
+//            out.writeUTF("Overall Score: " + player.getScore());
+//            out.flush();
+
             for (Player player : players.values()) {
                 Card card1 = blackjack.dealCard(player);
                 Card card2 = blackjack.dealCard(player);
-                out.writeUTF("Card: " + card1.toString());
-                out.writeUTF("Card: " + card2.toString());
-                out.writeUTF("Overall Score: " + player.getScore());
 
-//                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
-//                playerOut.writeUTF("200 INITIAL_CARDS " + card1.toString() + " " + card2.toString() + " " + player.getScore());
-//                playerOut.flush();
-
-                sendResponse(200, "OK - Game started. Two cards dealt to each player.");
+                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+                playerOut.writeUTF("Card: " + card1.toString());
+                playerOut.writeUTF("Card: " + card2.toString());
+                playerOut.writeUTF("Overall Score: " + player.getScore());
+                playerOut.flush();
 
                 System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
             }
+
+            sendResponse(200, "OK - Game started. Two cards have been dealt to each players.");
+//            System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
         } else{
             sendResponse(400, "Bad request - Game is already started.");
         }
@@ -233,6 +254,18 @@ class NewClientHandler extends Thread {
                 playerOut.flush();
             } catch (IOException e) {
                 System.out.println("Error broadcasting message to player: " + player.getName());
+            }
+        }
+    }
+
+    private void broadcastCommand(String command) {
+        for (Player player : players.values()) {
+            try {
+                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+                playerOut.writeUTF(command);
+                playerOut.flush();
+            } catch (IOException e) {
+                System.out.println("Error broadcasting command to player: " + player.getName());
             }
         }
     }
