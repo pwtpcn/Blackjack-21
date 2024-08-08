@@ -7,7 +7,6 @@ public class Client {
     private DataInputStream in = null;
     private DataOutputStream out = null;
     private static String ADDRESS = "0.0.0.0";
-//    private static String ADDRESS = "192.168.133.187";
 
     public Client(String address, int port) {
         try {
@@ -26,8 +25,6 @@ public class Client {
             // Register player name
             System.out.print("Enter your name: ");
             String playerName = input.readLine();
-//            System.out.print(playerName + " has join game");
-//            System.out.println("");
             out.writeUTF("REGISTER " + playerName);
             out.flush();
 
@@ -42,8 +39,8 @@ public class Client {
                 System.out.println("Available Command");
                 System.out.println("  - START : start the game.");
                 System.out.println("  - HIT : ask for one more card.");
-                System.out.println("  - PASS : pass your turn, if all player already passed game will end");
-                System.out.println("  - SEE : show first card of all players");
+                System.out.println("  - PASS : pass your turn, if all player already passed game will end.");
+                System.out.println("  - SEE : show first card of all players.");
                 System.out.println("  - EXIT : exit the game.");
                 System.out.println("-------------------------");
 
