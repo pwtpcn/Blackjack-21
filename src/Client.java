@@ -37,8 +37,15 @@ public class Client {
 
             if(response.startsWith("200")) {
                 System.out.println("Registration successful");
-                System.out.print(playerName + " has join game");
-                System.out.println("");
+                System.out.println(playerName + " has join game");
+                System.out.println("-------------------------");
+                System.out.println("Available Command");
+                System.out.println("  - START : start the game.");
+                System.out.println("  - HIT : ask for one more card.");
+                System.out.println("  - PASS : pass your turn, if all player already passed game will end");
+                System.out.println("  - SEE : show first card of all players");
+                System.out.println("  - EXIT : exit the game.");
+                System.out.println("-------------------------");
 
                 // Thread to read messages from the server
                 Thread readThread = new Thread(() -> {
@@ -59,7 +66,7 @@ public class Client {
                 String line = "";
 
                 // Main loop to send messages to the server
-                while (!line.equals("Over")) {
+                while (!line.equals("EXIT")) {
                     try {
                         line = input.readLine();
                         out.writeUTF(line);

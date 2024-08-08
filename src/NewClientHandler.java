@@ -42,7 +42,6 @@ class NewClientHandler extends Thread {
                         startBroadcast();
                         break;
                     case "PLAY":
-//                        broadcastCommand("PLAY");
                         handlePlay();
                         break;
                     case "HIT":
@@ -51,14 +50,14 @@ class NewClientHandler extends Thread {
                     case "PASS":
                         handlePass();
                         break;
-                    case "OVER":
-                        handleOver();
+                    case "EXIT":
+                        handleExit();
                         break;
                     case "SEE":
                         handlerSee();
                         break;
                     default:
-                        sendResponse(400, "Bad request - Wrong command (START, HIT, PASS, SEE, OVER)");
+                        sendResponse(400, "Bad request - Wrong command (START, HIT, PASS, SEE, EXIT)");
                         break;
                 }
             }
@@ -224,8 +223,14 @@ class NewClientHandler extends Thread {
         broadcastMessage("-------------------------");
     }
 
-    private void handleOver() {
-        System.out.println("Received OVER command, closing connection.");
+    private void handleExit() {
+        players.remove(playerName);
+        System.out.println("Player " + playerName + " has left the game.");
+        System.out.println("Player in game :");
+        for (Player p : players.values()) {
+            System.out.println(p.getName());
+        }
+        System.out.println("Received OVER command, closing connection from player " + playerName + ".");
     }
 
     private void broadcastMessage(String message) {
