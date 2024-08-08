@@ -43,6 +43,7 @@ public class Player {
     public void reset(){
         score = 0;
         hand.clear();
+        passed = false;
     }
 
     public void printHand() {
@@ -64,4 +65,6 @@ public class Player {
     public void setPassed(boolean passed) {
         this.passed = passed;
     }
+
+
 }

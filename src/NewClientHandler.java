@@ -60,7 +60,7 @@ class NewClientHandler extends Thread {
 //                    case "RESET":
 //                        handleReset();
                     default:
-                        sendResponse(400, "Bad request - Wrong command (PLAY, HIT, PASS, SEE, OVER)");
+                        sendResponse(400, "Bad request - Wrong command (START, HIT, PASS, SEE, OVER)");
                         break;
                 }
             }
@@ -104,26 +104,26 @@ class NewClientHandler extends Thread {
         System.out.println("Player " + playerName + " registered with IP: " + socket.getInetAddress());
     }
 
-    private void startBroadcast(){
+    private void startBroadcast() throws IOException {
         System.out.println(playerName + " use START command");
         System.out.println("Game start");
-        broadcastMessage("START");
-        broadcastMessage("**--------START--------**");
+//        int count=0;
+//        if(!blackjack.isGameStarted()){
+//            blackjack.startGame();
+//            count++;
+            broadcastMessage("START");
+            broadcastMessage("**--------START--------**");
+//        }
+//        if(count<=players.size()){
+//            sendResponse(200, "OK - Game start.");
+//        } else {
+//            sendResponse(400, "Bad request - Game is already started..");
+//        }
     }
 
     private void handlePlay() throws IOException {
         if(!blackjack.isGameStarted()){
             blackjack.startGame();
-//            broadcastMessage("**--------START--------**");
-
-//            Player player = players.get(playerName);
-//
-//            Card card1 = blackjack.dealCard(player);
-//            Card card2 = blackjack.dealCard(player);
-//            out.writeUTF("Card: " + card1.toString());
-//            out.writeUTF("Card: " + card2.toString());
-//            out.writeUTF("Overall Score: " + player.getScore());
-//            out.flush();
 
             for (Player player : players.values()) {
                 Card card1 = blackjack.dealCard(player);
@@ -137,17 +137,16 @@ class NewClientHandler extends Thread {
 
                 System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
             }
-
-            sendResponse(200, "OK - Game started. Two cards have been dealt to each players.");
-//            System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
-        } else{
-            sendResponse(400, "Bad request - Game is already started.");
+            sendResponse(200, "OK - Game start.");
+        } else {
+            sendResponse(400, "Bad request - Game is already started..");
         }
     }
 
     private void handleHit() throws IOException {
         if(blackjack.isGameStarted()){
 //            Player player = players.get(socket.getInetAddress().toString());
+            System.out.println(playerName + " use HIT command");
             Player player = players.get(playerName);
             if (player != null) {
                 Card card = blackjack.dealCard(player);
@@ -167,6 +166,7 @@ class NewClientHandler extends Thread {
     private void handlerSee() throws IOException {
         if(blackjack.isGameStarted()){
 //            Player player = players.get(socket.getInetAddress().toString());
+            System.out.println(playerName + " use SEE command");
             Player player = players.get(playerName);
             if(player != null) {
                 for (Player p : players.values()) {
@@ -185,6 +185,7 @@ class NewClientHandler extends Thread {
     private void handlePass() throws IOException {
         if(blackjack.isGameStarted()){
 //            Player player = players.get(socket.getInetAddress().toString());
+            System.out.println(playerName + " use PASS command");
             Player player = players.get(playerName);
             if (player != null) {
                 if(!player.hasPassed()){
@@ -236,15 +237,12 @@ class NewClientHandler extends Thread {
         for (Player p : players.values()) {
             broadcastMessage(p.getName() + " score: " + p.getScore());
         }
+        broadcastMessage("**---------------------**");
     }
 
     private void handleOver() {
         System.out.println("Received OVER command, closing connection.");
     }
-
-//    private void handleReset() {
-//        blackjack.reset();
-//    }
 
     private void broadcastMessage(String message) {
         for (Player player : players.values()) {
