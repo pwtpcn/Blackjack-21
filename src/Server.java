@@ -19,7 +19,6 @@ public class Server {
                 System.out.println("Waiting for a client ...");
                 Socket socket = server.accept();
                 System.out.println("Client accepted");
-//                new ClientHandler(socket, players, blackjack).start();
                 new NewClientHandler(socket, players, blackjack).start();
             }
         } catch (IOException i) {

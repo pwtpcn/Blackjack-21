@@ -48,9 +48,6 @@ public class Client {
                             if(serverMessage.equals("START")) {
                                 out.writeUTF("PLAY");
                             }
-//                            if(serverMessage.equals("PLAY")){
-//                                handlePlay();
-//                            }
                             System.out.println(serverMessage);
                         }
                     } catch (IOException e) {

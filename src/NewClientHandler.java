@@ -57,8 +57,6 @@ class NewClientHandler extends Thread {
                     case "SEE":
                         handlerSee();
                         break;
-//                    case "RESET":
-//                        handleReset();
                     default:
                         sendResponse(400, "Bad request - Wrong command (START, HIT, PASS, SEE, OVER)");
                         break;
@@ -84,11 +82,6 @@ class NewClientHandler extends Thread {
     }
 
     private void handleRegister(String playerName) throws IOException {
-//        if (playerName == null || playerName.isEmpty()) {
-//            sendResponse(400, "BAD_REQUEST");
-//            return;
-//        }
-
         while (playerName.trim().isEmpty()){
             sendResponse(400, "Bad request - Player name cannot be empty.");
             playerName = in.readUTF().split(" ", 2)[1];
@@ -98,8 +91,6 @@ class NewClientHandler extends Thread {
         players.put(playerName, player);
         blackjack.addPlayer(player);
 
-//        blackjack.playersList();
-
         sendResponse(200, "OK - Registration successful. Welcome  " + playerName + "!");
         System.out.println("Player " + playerName + " registered with IP: " + socket.getInetAddress());
     }
@@ -107,18 +98,8 @@ class NewClientHandler extends Thread {
     private void startBroadcast() throws IOException {
         System.out.println(playerName + " use START command");
         System.out.println("Game start");
-//        int count=0;
-//        if(!blackjack.isGameStarted()){
-//            blackjack.startGame();
-//            count++;
             broadcastMessage("START");
             broadcastMessage("**--------START--------**");
-//        }
-//        if(count<=players.size()){
-//            sendResponse(200, "OK - Game start.");
-//        } else {
-//            sendResponse(400, "Bad request - Game is already started..");
-//        }
     }
 
     private void handlePlay() throws IOException {
@@ -139,7 +120,7 @@ class NewClientHandler extends Thread {
             }
             sendResponse(200, "OK - Game start.");
         } else {
-            sendResponse(400, "Bad request - Game is already started..");
+            sendResponse(400, "Bad request - Game is already started.");
         }
     }
 
@@ -237,7 +218,7 @@ class NewClientHandler extends Thread {
         for (Player p : players.values()) {
             broadcastMessage(p.getName() + " score: " + p.getScore());
         }
-        broadcastMessage("**---------------------**");
+        broadcastMessage("-------------------------");
     }
 
     private void handleOver() {
