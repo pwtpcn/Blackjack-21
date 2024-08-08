@@ -97,36 +97,41 @@ class NewClientHandler extends Thread {
 
     private void startBroadcast() throws IOException {
         System.out.println(playerName + " use START command");
-        System.out.println("Game start");
-            broadcastMessage("START");
-            broadcastMessage("**--------START--------**");
-    }
 
-    private void handlePlay() throws IOException {
         if(!blackjack.isGameStarted()){
             blackjack.startGame();
-
-            for (Player player : players.values()) {
-                Card card1 = blackjack.dealCard(player);
-                Card card2 = blackjack.dealCard(player);
-
-                DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
-                playerOut.writeUTF("Card: " + card1.toString());
-                playerOut.writeUTF("Card: " + card2.toString());
-                playerOut.writeUTF("Overall Score: " + player.getScore());
-                playerOut.flush();
-
-                System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
-            }
+            System.out.println("Game start");
+            broadcastMessage("START");
+            broadcastMessage("**--------START--------**");
             sendResponse(200, "OK - Game start.");
         } else {
             sendResponse(400, "Bad request - Game is already started.");
+        }
+
+    }
+
+    private void handlePlay() throws IOException {
+        if(blackjack.isGameStarted()){
+            Player player = players.get(playerName);
+            Card card1 = blackjack.dealCard(player);
+            Card card2 = blackjack.dealCard(player);
+
+            DataOutputStream playerOut = new DataOutputStream(player.getSocket().getOutputStream());
+            playerOut.writeUTF("Card: " + card1.toString());
+            playerOut.writeUTF("Card: " + card2.toString());
+            playerOut.writeUTF("Overall Score: " + player.getScore());
+            playerOut.flush();
+
+            System.out.println("Dealt cards to " + player.getName() + ": " + card1 + ", " + card2);
+
+            sendResponse(200, "OK - Dealt cards to each player.");
+        } else {
+            sendResponse(400, "Bad request - Game is not started yet.");
         }
     }
 
     private void handleHit() throws IOException {
         if(blackjack.isGameStarted()){
-//            Player player = players.get(socket.getInetAddress().toString());
             System.out.println(playerName + " use HIT command");
             Player player = players.get(playerName);
             if (player != null) {
@@ -146,7 +151,6 @@ class NewClientHandler extends Thread {
 
     private void handlerSee() throws IOException {
         if(blackjack.isGameStarted()){
-//            Player player = players.get(socket.getInetAddress().toString());
             System.out.println(playerName + " use SEE command");
             Player player = players.get(playerName);
             if(player != null) {
@@ -165,7 +169,6 @@ class NewClientHandler extends Thread {
 
     private void handlePass() throws IOException {
         if(blackjack.isGameStarted()){
-//            Player player = players.get(socket.getInetAddress().toString());
             System.out.println(playerName + " use PASS command");
             Player player = players.get(playerName);
             if (player != null) {

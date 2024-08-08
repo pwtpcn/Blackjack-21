@@ -85,11 +85,6 @@ public class Client {
         }
     }
 
-    private void sendCommand(String command) throws IOException {
-        out.writeUTF(command);
-        out.flush();
-    }
-
     public static void main(String args[]) {
         Client client = new Client(ADDRESS, 5000);
     }
